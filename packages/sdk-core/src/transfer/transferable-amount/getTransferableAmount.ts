@@ -23,6 +23,7 @@ const getOriginFeeOrThrow = async <TApi, TRes, TSigner, TCustomChain extends str
     api,
     buildTx,
     origin: chain,
+    destination,
     sender,
     feeAsset,
     version,
@@ -34,7 +35,8 @@ const getOriginFeeOrThrow = async <TApi, TRes, TSigner, TCustomChain extends str
     api,
     buildTx,
     origin: chain,
-    destination: chain,
+    // The fee has to be estimated for the real route, not for an origin -> origin transfer
+    destination,
     sender,
     feeAsset,
     version,
@@ -85,9 +87,10 @@ const getTransferableAmountForAsset = async <
   >,
   resolvedFeeAsset: WithOptionalAmount<TAssetInfo> | undefined
 ): Promise<bigint> => {
-  const { api, sender, origin: chain, currency } = options
+  const { api, sender, origin: chain, destination, currency } = options
 
-  const asset = api.findAssetInfoOrThrow(chain, currency)
+  // Destination is needed to pick the right asset when a symbol is ambiguous on the origin
+  const asset = api.findAssetInfoOrThrow(chain, currency, destination)
 
   const amount = abstractDecimals(currency.amount, asset.decimals, api)
 
